@@ -72,7 +72,7 @@ def ask_question(question: str):
 
     # Groq is free: 14,400 requests/day
     llm = ChatGroq(
-        model="mixtral-8x7b-32768",
+        model="llama-3.3-70b-versatile",
         temperature=0,
         api_key=groq_api_key,
     )
