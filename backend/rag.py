@@ -61,28 +61,31 @@ def process_pdf(file_path: str):
 import requests
 
 def get_best_groq_model(api_key):
+    known_good_models = [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
+        "llama-3.1-70b-versatile",
+        "llama3-8b-8192",
+        "llama3-70b-8192",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it",
+        "gemma-7b-it"
+    ]
     try:
         resp = requests.get(
             "https://api.groq.com/openai/v1/models",
             headers={"Authorization": f"Bearer {api_key}"}
         )
         if resp.status_code == 200:
-            models = resp.json().get("data", [])
-            # Prioritize a standard llama model that isn't a whisper/tool/guard/vision model
-            for m in models:
-                mid = m["id"].lower()
-                if "llama" in mid and "guard" not in mid and "vision" not in mid and "whisper" not in mid and "tool" not in mid:
-                    return m["id"]
-            # Fallback to the first available model that isn't a guard model
-            for m in models:
-                mid = m["id"].lower()
-                if "guard" not in mid and "vision" not in mid:
-                    return m["id"]
-            if models:
-                return models[0]["id"]
+            available_models = [m["id"] for m in resp.json().get("data", [])]
+            for safe_model in known_good_models:
+                if safe_model in available_models:
+                    return safe_model
     except Exception:
         pass
-    return "llama3-8b-8192" # Fallback
+    
+    # Ultimate fallback if nothing matches
+    return "llama3-8b-8192"
 
 
 def ask_question(question: str):
