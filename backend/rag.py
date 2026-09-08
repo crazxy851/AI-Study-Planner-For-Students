@@ -70,9 +70,9 @@ def ask_question(question: str):
     if not groq_api_key:
         return "⚠️ GROQ_API_KEY is not set. Please add it to your environment variables."
 
-    # Groq is free: 14,400 requests/day, ultra-fast llama3 inference
+    # Groq is free: 14,400 requests/day, ultra-fast llama 3.1 inference
     llm = ChatGroq(
-        model="llama3-8b-8192",
+        model="llama-3.1-8b-instant",
         temperature=0,
         api_key=groq_api_key,
     )
