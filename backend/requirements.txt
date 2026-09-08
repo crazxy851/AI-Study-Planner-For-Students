@@ -10,3 +10,4 @@ langchain-groq
 chromadb
 pypdf
 langchain-chroma
+requests

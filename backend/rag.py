@@ -58,6 +58,29 @@ def process_pdf(file_path: str):
     return True
 
 
+import requests
+
+def get_best_groq_model(api_key):
+    try:
+        resp = requests.get(
+            "https://api.groq.com/openai/v1/models",
+            headers={"Authorization": f"Bearer {api_key}"}
+        )
+        if resp.status_code == 200:
+            models = resp.json().get("data", [])
+            # Prioritize a standard llama model that isn't a whisper/tool model
+            for m in models:
+                mid = m["id"].lower()
+                if "llama" in mid and "whisper" not in mid and "tool" not in mid:
+                    return m["id"]
+            # Fallback to the first available model
+            if models:
+                return models[0]["id"]
+    except Exception:
+        pass
+    return "llama3-8b-8192" # Fallback
+
+
 def ask_question(question: str):
     global _vectorstore
 
@@ -70,9 +93,12 @@ def ask_question(question: str):
     if not groq_api_key:
         return "⚠️ GROQ_API_KEY is not set. Please add it to your environment variables."
 
+    # Auto-detect available model
+    model_id = get_best_groq_model(groq_api_key)
+
     # Groq is free: 14,400 requests/day
     llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
+        model=model_id,
         temperature=0,
         api_key=groq_api_key,
     )
