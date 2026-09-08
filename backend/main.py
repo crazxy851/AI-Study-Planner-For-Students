@@ -41,13 +41,7 @@ async def chat(question: str = Form(...)):
         return {"answer": answer}
     except Exception as e:
         error_msg = str(e)
-        # Give a helpful message if Ollama isn't running
-        if "connection" in error_msg.lower() or "refused" in error_msg.lower():
-            raise HTTPException(
-                status_code=503,
-                detail="Cannot connect to Ollama. Please make sure Ollama is running: open a terminal and run 'ollama run llama3'"
-            )
-        raise HTTPException(status_code=500, detail=f"Error: {error_msg}")
+        raise HTTPException(status_code=500, detail=f"Error generating answer: {error_msg}")
 
 
 @app.get("/health")

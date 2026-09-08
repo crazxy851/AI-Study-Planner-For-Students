@@ -123,7 +123,7 @@ export default function App() {
       const res = await axios.post(`${API_BASE_URL}/chat`, fd);
       setMessages(prev => [...prev, { role: 'assistant', content: res.data.answer }]);
     } catch (err) {
-      const detail = err?.response?.data?.detail || 'Error connecting. Is Ollama running?';
+      const detail = err?.response?.data?.detail || 'Error connecting to backend. (If on Render, it might be waking up!)';
       setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ ${detail}` }]);
     } finally { setLoading(false); }
   };
