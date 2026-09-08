@@ -68,12 +68,16 @@ def get_best_groq_model(api_key):
         )
         if resp.status_code == 200:
             models = resp.json().get("data", [])
-            # Prioritize a standard llama model that isn't a whisper/tool model
+            # Prioritize a standard llama model that isn't a whisper/tool/guard/vision model
             for m in models:
                 mid = m["id"].lower()
-                if "llama" in mid and "whisper" not in mid and "tool" not in mid:
+                if "llama" in mid and "guard" not in mid and "vision" not in mid and "whisper" not in mid and "tool" not in mid:
                     return m["id"]
-            # Fallback to the first available model
+            # Fallback to the first available model that isn't a guard model
+            for m in models:
+                mid = m["id"].lower()
+                if "guard" not in mid and "vision" not in mid:
+                    return m["id"]
             if models:
                 return models[0]["id"]
     except Exception:
