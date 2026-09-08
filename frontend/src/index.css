@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --color-gray-950: #0a0a0f;
+}
+
+* {
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #0a0a0f;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #374151; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+/* Typing dots animation */
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #818cf8;
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Message fade-in */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.message-enter {
+  animation: fadeSlideIn 0.3s ease forwards;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Markdown in dark bg */
+.dark-prose p   { color: #e5e7eb; font-size: 0.875rem; line-height: 1.625; margin: 0.25rem 0; }
+.dark-prose strong { color: #fff; font-weight: 600; }
+.dark-prose em  { color: #c4b5fd; }
+.dark-prose ul  { list-style: disc; padding-left: 1rem; color: #e5e7eb; font-size: 0.875rem; }
+.dark-prose ol  { list-style: decimal; padding-left: 1rem; color: #e5e7eb; font-size: 0.875rem; }
+.dark-prose li  { margin: 0.25rem 0; }
+.dark-prose code { background: #1f2937; color: #a5b4fc; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: monospace; }
+.dark-prose pre  { background: #111827; padding: 0.75rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.5rem 0; }
+.dark-prose h1, .dark-prose h2, .dark-prose h3 { color: #fff; font-weight: 600; margin: 0.5rem 0; }
