@@ -2,26 +2,28 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
+from dotenv import load_dotenv
 
-persist_directory = "chroma_db"
+load_dotenv()
 
-# ChromaDB's built-in ONNX embeddings — no PyTorch/sentence-transformers needed
+# ChromaDB's built-in ONNX embeddings — no PyTorch needed
 class ChromaDefaultEmbeddings:
     def __init__(self):
         self._fn = DefaultEmbeddingFunction()
-
     def embed_documents(self, texts):
         return self._fn(texts)
-
     def embed_query(self, text):
         return self._fn([text])[0]
 
 embeddings = ChromaDefaultEmbeddings()
+
+# In-memory Chroma (works on any free host — user re-uploads PDF per session)
+_vectorstore = None
 
 PROMPT_TEMPLATE = """You are an intelligent academic tutor. Use the provided context to answer the user's question clearly and accurately.
 If the answer is not in the context, say "I cannot find the answer in the provided documents." Do not make up information.
@@ -35,35 +37,45 @@ Answer:"""
 QA_PROMPT = PromptTemplate(template=PROMPT_TEMPLATE, input_variables=["context", "question"])
 
 
-def get_vectorstore():
-    return Chroma(persist_directory=persist_directory, embedding_function=embeddings)
-
-
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
 def process_pdf(file_path: str):
+    global _vectorstore
+
     loader = PyPDFLoader(file_path)
     documents = loader.load()
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = text_splitter.split_documents(documents)
 
-    Chroma.from_documents(
+    # Build an in-memory vector store (no disk persistence needed)
+    _vectorstore = Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
-        persist_directory=persist_directory
     )
     return True
 
 
 def ask_question(question: str):
-    vectorstore = get_vectorstore()
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+    global _vectorstore
 
-    # smollm2:135m is only ~90MB. Run: ollama run smollm2:135m
-    llm = ChatOllama(model="smollm2:135m", temperature=0)
+    if _vectorstore is None:
+        return "⚠️ Please upload a PDF document first before asking questions."
+
+    retriever = _vectorstore.as_retriever(search_kwargs={"k": 4})
+
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        return "⚠️ GROQ_API_KEY is not set. Please add it to your environment variables."
+
+    # Groq is free: 14,400 requests/day, ultra-fast llama3 inference
+    llm = ChatGroq(
+        model="llama3-8b-8192",
+        temperature=0,
+        api_key=groq_api_key,
+    )
 
     chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
