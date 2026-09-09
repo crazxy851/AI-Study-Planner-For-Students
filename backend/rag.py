@@ -2,7 +2,7 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
@@ -58,36 +58,6 @@ def process_pdf(file_path: str):
     return True
 
 
-import requests
-
-def get_best_groq_model(api_key):
-    known_good_models = [
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant",
-        "llama-3.1-70b-versatile",
-        "llama3-8b-8192",
-        "llama3-70b-8192",
-        "mixtral-8x7b-32768",
-        "gemma2-9b-it",
-        "gemma-7b-it"
-    ]
-    try:
-        resp = requests.get(
-            "https://api.groq.com/openai/v1/models",
-            headers={"Authorization": f"Bearer {api_key}"}
-        )
-        if resp.status_code == 200:
-            available_models = [m["id"] for m in resp.json().get("data", [])]
-            for safe_model in known_good_models:
-                if safe_model in available_models:
-                    return safe_model
-    except Exception:
-        pass
-    
-    # Ultimate fallback if nothing matches
-    return "llama3-8b-8192"
-
-
 def ask_question(question: str):
     global _vectorstore
 
@@ -96,18 +66,15 @@ def ask_question(question: str):
 
     retriever = _vectorstore.as_retriever(search_kwargs={"k": 4})
 
-    groq_api_key = os.getenv("GROQ_API_KEY")
-    if not groq_api_key:
-        return "⚠️ GROQ_API_KEY is not set. Please add it to your environment variables."
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+    if not gemini_api_key:
+        return "⚠️ GEMINI_API_KEY is not set. Please add it to your environment variables on Render."
 
-    # Auto-detect available model
-    model_id = get_best_groq_model(groq_api_key)
-
-    # Groq is free: 14,400 requests/day
-    llm = ChatGroq(
-        model=model_id,
+    # Google Gemini API is incredibly stable and has a huge free tier
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-1.5-flash",
         temperature=0,
-        api_key=groq_api_key,
+        google_api_key=gemini_api_key,
     )
 
     chain = (

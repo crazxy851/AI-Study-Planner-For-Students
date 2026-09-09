@@ -6,6 +6,5 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: GROQ_API_KEY
-        sync: false   # You'll paste your key in the Render dashboard
-    plan: free
+      - key: GEMINI_API_KEY
+        sync: false

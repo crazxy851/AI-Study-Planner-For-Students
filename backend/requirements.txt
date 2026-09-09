@@ -6,7 +6,7 @@ langchain
 langchain-community
 langchain-core
 langchain-text-splitters
-langchain-groq
+langchain-google-genai
 chromadb
 pypdf
 langchain-chroma
