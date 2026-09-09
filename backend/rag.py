@@ -72,7 +72,7 @@ def ask_question(question: str):
 
     # Google Gemini API is incredibly stable and has a huge free tier
     llm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash-latest",
+        model="gemini-pro",
         temperature=0,
         google_api_key=gemini_api_key,
     )
